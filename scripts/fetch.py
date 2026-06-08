@@ -61,6 +61,11 @@ def main() -> None:
     out_path.write_text(json.dumps(response, indent=2))
     print(f"saved {len(response['items'])} plays → {out_path.relative_to(REPO_ROOT)}")
 
+#last 50 plays rolling window, so  run this often..
+def fetch_recently_played(sp: spotipy.Spotify) -> None:
+    response = sp.current_user_recently_played(limit=50)
+    path = save_json(response, "recently_played")
+    print(f"recently_played: {len(response['items'])} plays → {path.relative_to(REPO_ROOT)}")
 
 
 
