@@ -23,6 +23,10 @@ CACHE_PATH = REPO_ROOT/".cache"/"spotify_token.json"
 #permission spotify recent-played in the first batch is 50, top-read= my number ones.. lib-read the songs I saved..
 SCOPES = "user-read-recently-played user-top-read user-library-read"
 
+#how far back to look for saved tracks liked songs older than this are ignored
+SAVED_TRACKS_SINCE = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+
 #define get client to spotip handles whole oauth
 
 def get_client()-> spotipy.Spotify:
@@ -50,16 +54,21 @@ def save_json(data: dict, subfolder: str) -> Path:
 
     
 def main() -> None:
-    # make sure the folder exists, then go ask spotify for last 50 plays
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    #commented below because makeing changes..
+    # # make sure the folder exists, then go ask spotify for last 50 plays
+    # RAW_DIR.mkdir(parents=True, exist_ok=True)
+    # sp = get_client()
+    # response = sp.current_user_recently_played(limit=50)
+    # #save raw json with a utc timestamp filename. raw on purpose will re-shape later, don't lose info now
+    # timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    # out_path = RAW_DIR / f"{timestamp}.json"
+    # out_path.write_text(json.dumps(response, indent=2))
+    # print(f"saved {len(response['items'])} plays → {out_path.relative_to(REPO_ROOT)}")
     sp = get_client()
-    response = sp.current_user_recently_played(limit=50)
-
-    #save raw json with a utc timestamp filename. raw on purpose will re-shape later, don't lose info now
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    out_path = RAW_DIR / f"{timestamp}.json"
-    out_path.write_text(json.dumps(response, indent=2))
-    print(f"saved {len(response['items'])} plays → {out_path.relative_to(REPO_ROOT)}")
+    fetch_recently_played(sp)
+    fetch_top_tracks(sp)
+    fetch_top_artists(sp)
+    fetch_saved_tracks(sp)
 
 #last 50 plays rolling window, so  run this often..
 def fetch_recently_played(sp: spotipy.Spotify) -> None:
@@ -80,6 +89,40 @@ def fetch_top_artists(sp: spotipy.Spotify) -> None:
         response = sp.current_user_top_artists(limit=50, time_range=time_range)
         path = save_json(response, f"top_artists/{time_range}")
         print(f"top_artists/{time_range}: {len(response['items'])} → {path.relative_to(REPO_ROOT)}")
+
+
+#songs i liked since SAVED_TRACKS_SINCE it returns newest first, so i stop paginating as soon as hit an older one
+def fetch_saved_tracks(sp: spotipy.Spotify) -> None:
+    all_items = []
+    response = sp.current_user_saved_tracks(limit=50)
+
+    while True:
+        for item in response["items"]:
+            added_at = datetime.fromisoformat(item["added_at"].replace("Z", "+00:00"))
+            if added_at < SAVED_TRACKS_SINCE:
+                payload = {
+                    "items": all_items,
+                    "total": len(all_items),
+                    "since": SAVED_TRACKS_SINCE.isoformat(),
+                }
+                path = save_json(payload, "saved_tracks")
+                print(f"saved_tracks since {SAVED_TRACKS_SINCE.date()}: {len(all_items)} → {path.relative_to(REPO_ROOT)}")
+                return
+            all_items.append(item)
+
+        if not response["next"]:
+            break
+        response = sp.next(response)
+
+    # only reached if every saved track is newer than SAVED_TRACKS_SINCE
+    payload = {
+        "items": all_items,
+        "total": len(all_items),
+        "since": SAVED_TRACKS_SINCE.isoformat(),
+    }
+    path = save_json(payload, "saved_tracks")
+    print(f"saved_tracks since {SAVED_TRACKS_SINCE.date()}: {len(all_items)} → {path.relative_to(REPO_ROOT)}")
+
 
 
 # to fire the main lets call the file directly
