@@ -29,12 +29,13 @@ def get_client()-> spotipy.Spotify:
     #1. run will open a tab-browser after token cache makes it silent.. very smart of me..
     CACHE_PATH.parent.mkdir(exist_ok=True)
     auth = SpotifyOAuth(
-        client_id=os.environ["SPOTIFY_CLIENT_ID"]
-        Client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
+        client_id=os.environ["SPOTIFY_CLIENT_ID"],
+        client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
         redirect_uri=os.environ["SPOTIFY_REDIRECT_URI"],
         scope=SCOPES,
         cache_path=str(CACHE_PATH),
     )
+
     return spotipy.Spotify(auth_manager=auth)
     
 def main() -> None:
