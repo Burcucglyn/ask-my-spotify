@@ -17,7 +17,7 @@ load_dotenv()
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 #raw json path once i fetch thats where it will be save
-RAW_DIR = REPO_ROOT/"data"/"raw"/"recently_played"
+#RAW_DIR = REPO_ROOT/"data"/"raw"/"recently_played" commented this because will use save_json it will be build the path from subfolder
 CACHE_PATH = REPO_ROOT/".cache"/"spotify_token.json"
 
 #permission spotify recent-played in the first batch is 50, top-read= my number ones.. lib-read the songs I saved..
