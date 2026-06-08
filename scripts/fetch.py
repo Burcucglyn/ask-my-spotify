@@ -37,6 +37,17 @@ def get_client()-> spotipy.Spotify:
     )
 
     return spotipy.Spotify(auth_manager=auth)
+
+#after recent 50 song added this as first
+# small helper, every fetcher dumps raw json with a utc timestamp.
+def save_json(data: dict, subfolder: str) -> Path:
+    out_dir = REPO_ROOT / "data" / "raw" / subfolder
+    out_dir.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out_path = out_dir / f"{timestamp}.json"
+    out_path.write_text(json.dumps(data, indent=2))
+    return out_path
+
     
 def main() -> None:
     # make sure the folder exists, then go ask spotify for last 50 plays
@@ -49,6 +60,8 @@ def main() -> None:
     out_path = RAW_DIR / f"{timestamp}.json"
     out_path.write_text(json.dumps(response, indent=2))
     print(f"saved {len(response['items'])} plays → {out_path.relative_to(REPO_ROOT)}")
+
+
 
 
 
