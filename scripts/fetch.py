@@ -74,6 +74,12 @@ def fetch_top_tracks(sp: spotipy.Spotify) -> None:
         path = save_json(response, f"top_tracks/{time_range}")
         print(f"top_tracks/{time_range}: {len(response['items'])} → {path.relative_to(REPO_ROOT)}")
 
+#top 50 artists per time window same time ranges as above..
+def fetch_top_artists(sp: spotipy.Spotify) -> None:
+    for time_range in ("short_term", "medium_term", "long_term"):
+        response = sp.current_user_top_artists(limit=50, time_range=time_range)
+        path = save_json(response, f"top_artists/{time_range}")
+        print(f"top_artists/{time_range}: {len(response['items'])} → {path.relative_to(REPO_ROOT)}")
 
 
 # to fire the main lets call the file directly
