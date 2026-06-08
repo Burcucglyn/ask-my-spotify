@@ -1,0 +1,18 @@
+# secrets
+.env
+
+# spotipy token cache
+.cache/
+
+# raw + processed data — keep local
+data/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/
