@@ -67,6 +67,12 @@ def fetch_recently_played(sp: spotipy.Spotify) -> None:
     path = save_json(response, "recently_played")
     print(f"recently_played: {len(response['items'])} plays → {path.relative_to(REPO_ROOT)}")
 
+#top 50 tracks per time window roughly short=4 weeks, medium=6 months, long=years..
+def fetch_top_tracks(sp: spotipy.Spotify) -> None:
+    for time_range in ("short_term", "medium_term", "long_term"):
+        response = sp.current_user_top_tracks(limit=50, time_range=time_range)
+        path = save_json(response, f"top_tracks/{time_range}")
+        print(f"top_tracks/{time_range}: {len(response['items'])} → {path.relative_to(REPO_ROOT)}")
 
 
 
