@@ -37,4 +37,20 @@ def get_client()-> spotipy.Spotify:
     )
     return spotipy.Spotify(auth_manager=auth)
     
+def main() -> None:
+    # make sure the folder exists, then go ask spotify for last 50 plays
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    sp = get_client()
+    response = sp.current_user_recently_played(limit=50)
 
+    #save raw json with a utc timestamp filename. raw on purpose will re-shape later, don't lose info now
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out_path = RAW_DIR / f"{timestamp}.json"
+    out_path.write_text(json.dumps(response, indent=2))
+    print(f"saved {len(response['items'])} plays → {out_path.relative_to(REPO_ROOT)}")
+
+
+
+# to fire the main lets call the file directly
+if __name__ == "__main__":
+    main()
