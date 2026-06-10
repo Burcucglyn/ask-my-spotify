@@ -10,7 +10,9 @@ data/
 # python
 __pycache__/
 *.pyc
+venv/
 .venv/
+env/
 
 # editor / OS
 .DS_Store
